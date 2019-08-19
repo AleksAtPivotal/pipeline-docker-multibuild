@@ -1,0 +1,44 @@
+---
+resources: # This is where we define the resources are pipeline will work with. By resources we mean concourse resources specifically, a pipeline can still use tasks which are essentially arbitrary code that will run as scripts in containers during the build.  Tasks will live in the ci/tasks directory by convention.
+- name: source # Here we're pulling a git repo as well as naming the folder the repo will live in for the duration of the pipeline.  It's worth remembering that the name of this resource will be the name of the folder when you go to access files.
+  type: git
+  source:
+    uri: https://github.com/alekssaul/pipeline-docker-multibuild.git
+    ignore_paths: 
+      - README.md
+      - .gitignore
+      - ci/metadata/*
+      - ci/pipeline.yml
+    branch: master
+
+- name: bump
+  type: semver
+  source:
+    driver: git
+    branch: master
+    uri: https://github.com/alekssaul/pipeline-docker-multibuild.git
+    file: ci/metadata/tag
+    username: ((git.username))
+    password: ((git.password))
+
+
+- name: docker-image
+  type: docker-image
+  source:
+    username: ((registry.username))
+    password: ((registry.password))
+    repository: dockerhub.io/alekssaul/pipeline-docker-multibuild
+
+jobs: #  We're breaking with out into 2 jobs so that we can have 2 tags associated with our image.
+- name: build-docker-image-tagged # Builds the tagged version of our image and increments the version number in github.
+  serial: true
+  plan: # So the order here seems to be firm.  By that I mean the first put resource always seems to run before the second.  We're using that functionality to let the semver resource update git and the local data before the image gets pushed to our registry.
+  - get: source
+    trigger: true
+  - put: bump
+    params:
+      bump: patch
+  - put: docker-image
+    params:
+      build: source
+      tag_file: bump/version

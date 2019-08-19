@@ -1,0 +1,14 @@
+.*
+*.md
+DCO
+LICENSE
+NOTICE
+docs
+deployments
+README.md
+Makefile
+bin
+
+# OSX
+.DS_STORE
+secrets.yml
