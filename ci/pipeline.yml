@@ -14,12 +14,11 @@ resources: # This is where we define the resources are pipeline will work with. 
 - name: bump
   type: semver
   source:
-    driver: git
-    branch: master
-    uri: https://github.com/alekssaul/pipeline-docker-multibuild.git
-    file: ci/metadata/tag
-    username: ((git.username))
-    password: ((git.password))
+    driver: s3
+    bucket: pivotal-alekssaul
+    access_key_id: ((s3.access_key_id))
+    key: pipeline-docker-multibuild
+    secret_access_key: ((s3.secret_access_key))
 
 
 - name: docker-image
@@ -27,7 +26,7 @@ resources: # This is where we define the resources are pipeline will work with. 
   source:
     username: ((registry.username))
     password: ((registry.password))
-    repository: dockerhub.io/alekssaul/pipeline-docker-multibuild
+    repository: alekssaul/pipeline-docker-multibuild
 
 jobs: #  We're breaking with out into 2 jobs so that we can have 2 tags associated with our image.
 - name: build-docker-image-tagged # Builds the tagged version of our image and increments the version number in github.
