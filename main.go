@@ -11,5 +11,5 @@ func main() {
 }
 
 func handle(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello World New Version")
+	fmt.Fprintf(w, "Hello World version 0.0.3")
 }
